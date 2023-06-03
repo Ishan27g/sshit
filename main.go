@@ -27,14 +27,14 @@ func main() {
 	if port == "" {
 		port = "8080"
 	}
-	sshPort := os.Getenv("SSH_PORT")
-	if sshPort == "" {
-		sshPort = ":10022"
-	}
+	//sshPort := os.Getenv("SSH_PORT")
+	//if sshPort == "" {
+	//	sshPort = ":10022"
+	//}
 	s.tunnels = mapper.Init()
-	go s.httpServer(":" + port)
+	s.httpServer(":" + port)
 
-	s.sshInit(sshPort)
+	//s.sshInit(sshPort)
 }
 func (sht *sshit) httpServer(port string) {
 	m := mux.NewRouter()
