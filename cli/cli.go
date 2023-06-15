@@ -19,11 +19,11 @@ import (
 var host = os.Getenv("HOST")
 
 func init() {
-	if host == "" {
-		host = "http://localhost:8080"
-	} else {
-		host = "https://sshit.onrender.com"
-	}
+	//if host == "" {
+	//	host = "http://localhost:8080"
+	//} else {
+	//}
+	host = "https://sshit.onrender.com"
 }
 
 func defaultHttpClient() *http.Client {
@@ -38,11 +38,15 @@ func ReqUpload() (string, int) {
 	return requestUpload()
 }
 func requestUpload() (string, int) {
-	resp, err := defaultHttpClient().Get(host + "/upload")
+	req, _ := http.NewRequest("GET", host+"/upload", nil)
+	req.Header.Set("User-Agent", "IE=Edge")
+
+	resp, err := defaultHttpClient().Do(req)
 	if err != nil {
 		log.Fatalf("An Error Occured %v", err)
 	}
 	defer resp.Body.Close()
+
 	body, err := io.ReadAll(resp.Body)
 	if err != nil {
 		log.Fatalln(err)
@@ -65,11 +69,14 @@ func UploadFileAsBinary(id int, fileName string) string {
 	if err != nil {
 		log.Fatalf("An Error Occured %v", err)
 	}
+	req.Header.Set("User-Agent", "IE=Edge")
+
 	resp, err := defaultHttpClient().Do(req)
 	if err != nil {
 		log.Fatal(err)
 	}
 	defer resp.Body.Close()
+	_, _ = io.ReadAll(resp.Body)
 	return ""
 }
 func UploadFileAsFormData(id int, fileName string) {
@@ -115,9 +122,15 @@ func UploadFileAsFormData(id int, fileName string) {
 
 	res, err := defaultHttpClient().Do(req)
 	if err != nil {
+		fmt.Println(err.Error())
 		return
 	}
-
+	bb, err := io.ReadAll(res.Body)
+	if err != nil {
+		fmt.Println(err.Error())
+		return
+	}
+	fmt.Println(string(bb))
 	if res.StatusCode != http.StatusOK {
 		err = fmt.Errorf("bad status: %s", res.Status)
 	}

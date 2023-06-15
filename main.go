@@ -43,7 +43,11 @@ func main() {
 		link, id := cli.ReqUpload()
 		fmt.Println(fmt.Sprintf("%s/%d", link, id))
 		buf := bufio.NewReader(os.Stdin)
-		fmt.Print("> Start UploadFileAsBinary? ⏎")
+		if *asData {
+			fmt.Print("> Start Upload? ⏎")
+		} else {
+			fmt.Print("> Start Upload? ⏎")
+		}
 		sentence, err := buf.ReadBytes('\n')
 		if err != nil {
 			fmt.Println(err)
