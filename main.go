@@ -23,6 +23,14 @@ var host = os.Getenv("HOST")
 
 var asData = flag.Bool("d", false, "create download link with file contents. (default behaviour will create download link for file)")
 
+func init() {
+	if host == "" {
+		host = "http://localhost:8080"
+	} else {
+		host = "https://sshit.onrender.com"
+	}
+}
+
 //var init = flag.Bool("d", false, "create download link with file contents. (default behaviour will create download link for file)")
 
 type sshit struct {
@@ -62,8 +70,14 @@ func main() {
 	//	sshPort = ":10022"
 	//}
 	s.tunnels = mapper.Init()
+	go func() {
+		for {
+			// keepalive for render
+			_, _ = http.Get(host + "/keepalive")
+			<-time.After(30 * time.Minute)
+		}
+	}()
 	s.httpServer(":" + port)
-
 	//s.sshInit(sshPort)
 }
 func (sht *sshit) httpServer(port string) {
@@ -76,6 +90,11 @@ func (sht *sshit) httpServer(port string) {
 	})
 	m.HandleFunc("/", func(writer http.ResponseWriter, request *http.Request) {
 		writer.Write([]byte("ok"))
+		return
+	})
+	m.HandleFunc("/keepalive", func(writer http.ResponseWriter, request *http.Request) {
+		writer.Write([]byte("alive"))
+		fmt.Println("keepalive")
 		return
 	})
 	//	m.Handle("/mapView/", http.StripPrefix("/mapView/", http.FileServer(http.Dir("./mapView"))))
@@ -102,11 +121,7 @@ func (sht *sshit) httpServer(port string) {
 	})
 	m.HandleFunc("/upload", func(writer http.ResponseWriter, request *http.Request) {
 		id := sht.tunnels.Create()
-		if host == "" {
-			host = "http://localhost:8080"
-		} else {
-			host = "https://sshit.onrender.com"
-		}
+
 		b, _ := json.Marshal(&data.UrlResponse{DDlink: host + "/download", Id: id})
 		writer.WriteHeader(http.StatusCreated)
 		writer.Write(b)
