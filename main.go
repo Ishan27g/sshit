@@ -21,8 +21,6 @@ import (
 const MaxUploadSize = 104800 * 1024 // 100MB
 var host = os.Getenv("HOST")
 
-var asData = flag.Bool("d", false, "create download link with file contents. (default behaviour will create download link for file)")
-
 func init() {
 	if host == "" {
 		host = "http://localhost:8080"
@@ -38,11 +36,12 @@ type sshit struct {
 }
 
 func main() {
+	var asData = flag.Bool("d", false, "create download link with file contents. (default behaviour will create download link for file)")
 
-	if len(os.Args) == 2 {
+	if len(os.Args) >= 2 {
 		flag.Parse()
 		link, id := cli.ReqUpload()
-		fmt.Println(fmt.Sprintf("%s%d", link, id))
+		fmt.Println(fmt.Sprintf("%s/%d", link, id))
 		buf := bufio.NewReader(os.Stdin)
 		fmt.Print("> Start UploadFileAsBinary? ⏎")
 		sentence, err := buf.ReadBytes('\n')
@@ -52,7 +51,7 @@ func main() {
 			fmt.Println(string(sentence))
 		}
 		if *asData {
-			cli.UploadFileAsBinary(id, os.Args[1])
+			cli.UploadFileAsBinary(id, os.Args[2])
 		} else {
 			cli.UploadFileAsFormData(id, os.Args[1])
 		}
@@ -110,6 +109,7 @@ func (sht *sshit) httpServer(port string) {
 		}
 		f := <-filename
 		if f != "" {
+			fmt.Println("setting filename", f, "[]")
 			writer.Header().Set("Content-Disposition", "attachment; filename="+string(f))
 			writer.Header().Set("Content-Type", request.Header.Get("Content-Type"))
 		} else {

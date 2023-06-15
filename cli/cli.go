@@ -19,11 +19,11 @@ import (
 var host = os.Getenv("HOST")
 
 func init() {
-	//if host == "" {
-	//	host = "http://localhost:8080"
-	//} else {
-	host = "https://sshit.onrender.com"
-	//}
+	if host == "" {
+		host = "http://localhost:8080"
+	} else {
+		host = "https://sshit.onrender.com"
+	}
 }
 
 func defaultHttpClient() *http.Client {
