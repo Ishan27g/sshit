@@ -16,7 +16,7 @@ import (
 	"github.com/Ishan27g/sshit/data"
 )
 
-var host = os.Getenv("HOST")
+var host = "https://sshit.onrender.com" //os.Getenv("HOST")
 
 func init() {
 	if host == "" {
@@ -38,9 +38,7 @@ func ReqUpload() (string, int) {
 	return requestUpload()
 }
 func requestUpload() (string, int) {
-	fmt.Println(host)
 	resp, err := defaultHttpClient().Get(host + "/upload")
-	//Handle Error
 	if err != nil {
 		log.Fatalf("An Error Occured %v", err)
 	}
@@ -58,15 +56,11 @@ func requestUpload() (string, int) {
 	return "", -1
 }
 func UploadFileAsBinary(id int, fileName string) string {
-	send(id, fileName)
-	return ""
-	fmt.Println("host", fmt.Sprintf("%s/upload/%d", host, id))
 	b, err := os.Open(fileName)
 	if err != nil {
 		log.Fatal(err)
 	}
 	defer b.Close()
-	//b := []byte(`{"data": "http://localhost:9999/functions/method2"}`)
 	req, err := http.NewRequest("POST", fmt.Sprintf("%s/upload/%d", host, id), b)
 	if err != nil {
 		log.Fatalf("An Error Occured %v", err)
@@ -78,7 +72,7 @@ func UploadFileAsBinary(id int, fileName string) string {
 	defer resp.Body.Close()
 	return ""
 }
-func send(id int, fileName string) {
+func UploadFileAsFormData(id int, fileName string) {
 	var b bytes.Buffer
 	w := multipart.NewWriter(&b)
 	f, err := os.Open(fileName)

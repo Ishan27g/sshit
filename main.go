@@ -3,6 +3,7 @@ package main
 import (
 	"bufio"
 	"encoding/json"
+	"flag"
 	"fmt"
 	"net/http"
 	"os"
@@ -17,8 +18,10 @@ import (
 	"github.com/rs/cors"
 )
 
-const MaxUploadSize = 10240 * 1024 // 10MB
+const MaxUploadSize = 2048 * 1024 // 20MB
 var host = os.Getenv("HOST")
+
+var asData = flag.Bool("d", false, "create download link with file contents. (default behaviour will create download link for file)")
 
 type sshit struct {
 	tunnels *mapper.Mapper
@@ -27,6 +30,7 @@ type sshit struct {
 func main() {
 
 	if len(os.Args) == 2 {
+		flag.Parse()
 		link, id := cli.ReqUpload()
 		fmt.Println(fmt.Sprintf("%s%d", link, id))
 		buf := bufio.NewReader(os.Stdin)
@@ -37,7 +41,11 @@ func main() {
 		} else {
 			fmt.Println(string(sentence))
 		}
-		cli.UploadFileAsBinary(id, os.Args[1])
+		if *asData {
+			cli.UploadFileAsBinary(id, os.Args[1])
+		} else {
+			cli.UploadFileAsFormData(id, os.Args[1])
+		}
 		return
 	}
 
