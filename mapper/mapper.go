@@ -8,9 +8,11 @@ import (
 
 var tunnelId = 0
 
+type filename string
 type HttpTunnel struct {
-	HttpW io.Writer
-	done  chan bool
+	HttpW    io.Writer
+	fileName chan filename
+	done     chan bool
 }
 type Mapper struct {
 	tunnels map[int]chan HttpTunnel
@@ -36,16 +38,17 @@ func (m *Mapper) Create() int {
 	return tunnelId
 }
 
-func (m *Mapper) HttpReady(id int, w io.Writer) chan bool {
+func (m *Mapper) HttpReady(id int, w io.Writer) (chan filename, chan bool) {
 	if m.tunnels[id] == nil {
-		return nil
+		return nil, nil
 	}
+	fileName := make(chan filename)
 	done := make(chan bool)
-	m.tunnels[id] <- HttpTunnel{HttpW: w, done: done}
-	return done
+	m.tunnels[id] <- HttpTunnel{HttpW: w, fileName: fileName, done: done}
+	return fileName, done
 }
 
-func (m *Mapper) SshIt(id int, r io.Reader) *Report {
+func (m *Mapper) SshIt(id int, r io.Reader, fileName string) *Report {
 	if m.tunnels[id] == nil {
 		return nil
 	}
@@ -53,6 +56,9 @@ func (m *Mapper) SshIt(id int, r io.Reader) *Report {
 	waitStart := time.Now()
 	// blocked until sent by Ready
 	ht := <-m.tunnels[id]
+	ht.fileName <- filename(fileName)
+	<-ht.fileName
+	close(ht.fileName)
 	rp.Wait = time.Since(waitStart).String()
 	copyStart := time.Now()
 	fmt.Println("received from channel")
