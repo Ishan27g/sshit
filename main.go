@@ -18,10 +18,12 @@ import (
 	"github.com/rs/cors"
 )
 
-const MaxUploadSize = 2048 * 1024 // 20MB
+const MaxUploadSize = 104800 * 1024 // 100MB
 var host = os.Getenv("HOST")
 
 var asData = flag.Bool("d", false, "create download link with file contents. (default behaviour will create download link for file)")
+
+//var init = flag.Bool("d", false, "create download link with file contents. (default behaviour will create download link for file)")
 
 type sshit struct {
 	tunnels *mapper.Mapper
@@ -120,21 +122,20 @@ func (sht *sshit) httpServer(port string) {
 		if request.Header.Get("SSHIT_FILE") != "" {
 			request.Body = http.MaxBytesReader(writer, request.Body, MaxUploadSize)
 			_ = request.ParseMultipartForm(MaxUploadSize)
-			file, fileHeader, err := request.FormFile("file")
+			file, _, err := request.FormFile("file")
 			if err != nil {
 				http.Error(writer, err.Error(), http.StatusBadRequest)
 				return
 			}
 			fname := request.FormValue("name")
-			fmt.Println(*fileHeader)
 			r := sht.tunnels.SshIt(id, file, fname)
 			defer sht.tunnels.Clean(id)
-			fmt.Println(string(r.Intercepted))
+			//fmt.Println(string(r.Intercepted))
 			fmt.Println(r.Wait, r.Copy)
 		} else {
 			r := sht.tunnels.SshIt(id, request.Body, "")
 			defer sht.tunnels.Clean(id)
-			fmt.Println(string(r.Intercepted))
+			//fmt.Println(string(r.Intercepted))
 			fmt.Println(r.Wait, r.Copy)
 		}
 
@@ -161,7 +162,7 @@ func (sht *sshit) sshInit(port string) {
 		s.Write([]byte(fmt.Sprintf("http://localhost:8090/download/%d\n", id)))
 		r := sht.tunnels.SshIt(id, s, "")
 		defer sht.tunnels.Clean(id)
-		fmt.Println(string(r.Intercepted))
+		//	fmt.Println(string(r.Intercepted))
 		fmt.Println(r.Wait, r.Copy)
 		s.Write([]byte("done"))
 	})

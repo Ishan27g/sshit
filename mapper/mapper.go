@@ -62,23 +62,26 @@ func (m *Mapper) SshIt(id int, r io.Reader, fileName string) *Report {
 	rp.Wait = time.Since(waitStart).String()
 	copyStart := time.Now()
 	fmt.Println("received from channel")
-	pr, pw := io.Pipe()
-	intercepted := make(chan bool)
-	go func() {
-		all, err := io.ReadAll(pr)
-		if err != nil {
-			return
-		}
-		rp.Intercepted = all
-		intercepted <- true
-	}()
-	mr := io.MultiWriter(ht.HttpW, pw)
-	io.Copy(mr, r)
-	pw.Close()
+	{
+		_, _ = io.Copy(ht.HttpW, r)
+	}
+	//pr, pw := io.Pipe()
+	//intercepted := make(chan bool)
+	//go func() {
+	//	all, err := io.ReadAll(pr)
+	//	if err != nil {
+	//		return
+	//	}
+	//	rp.Intercepted = all
+	//	intercepted <- true
+	//}()
+	//mr := io.MultiWriter(ht.HttpW, pw)
+	//io.Copy(mr, r)
+	//pw.Close()
 	rp.Copy = time.Since(copyStart).String()
 	close(ht.done)
 	m.Clean(id)
-	<-intercepted
+	//<-intercepted
 	return rp
 }
 func (m *Mapper) Clean(id int) {

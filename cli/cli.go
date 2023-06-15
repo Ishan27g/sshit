@@ -13,10 +13,12 @@ import (
 	"strings"
 	"time"
 
+	"github.com/schollz/progressbar/v3"
+
 	"github.com/Ishan27g/sshit/data"
 )
 
-var host = "https://sshit.onrender.com" //os.Getenv("HOST")
+var host = os.Getenv("HOST")
 
 func init() {
 	if host == "" {
@@ -113,10 +115,22 @@ func UploadFileAsFormData(id int, fileName string) {
 	req.Header.Set("SSHIT_FILE", fileName)
 	req.Header.Set("Content-Type", w.FormDataContentType())
 
+	//bar := progressbar.NewOptions(2,
+	//	progressbar.OptionSetWriter(os.Stdout),
+	//	progressbar.OptionFullWidth(),
+	//	progressbar.OptionShowCount(),
+	//	progressbar.OptionClearOnFinish(),
+	//	progressbar.OptionThrottle(time.Second*5))
+
 	res, err := defaultHttpClient().Do(req)
 	if err != nil {
 		return
 	}
+	bar := progressbar.DefaultBytes(
+		res.ContentLength,
+		"uploading",
+	)
+	io.Copy(io.MultiWriter(f, bar), res.Body)
 
 	if res.StatusCode != http.StatusOK {
 		err = fmt.Errorf("bad status: %s", res.Status)
