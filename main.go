@@ -8,6 +8,7 @@ import (
 	"net/http"
 	"os"
 	"strconv"
+	"strings"
 	"time"
 
 	"github.com/Ishan27g/sshit/cli"
@@ -19,10 +20,11 @@ import (
 )
 
 const MaxUploadSize = 104800 * 1024 // 100MB
-var host = os.Getenv("HOST")
+var host = ""
 
 func init() {
-	if host == "" {
+	host, _ = os.Hostname()
+	if strings.Contains(host, "local") {
 		host = "http://localhost:8080"
 	} else {
 		host = "https://sshit.onrender.com"
@@ -41,7 +43,7 @@ func main() {
 	if len(os.Args) >= 2 {
 		flag.Parse()
 		link, id := cli.ReqUpload()
-		fmt.Println(fmt.Sprintf("%s/%d", link, id))
+		fmt.Println(fmt.Sprintf("\n\n\tlink: %s/%d\n\n", link, id))
 		buf := bufio.NewReader(os.Stdin)
 		if *asData {
 			fmt.Print("> Start Upload? ⏎")
