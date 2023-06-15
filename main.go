@@ -17,6 +17,7 @@ import (
 	"github.com/gliderlabs/ssh"
 	"github.com/gorilla/mux"
 	"github.com/rs/cors"
+	"github.com/savioxavier/termlink"
 )
 
 const MaxUploadSize = 104800 * 1024 // 100MB
@@ -43,7 +44,12 @@ func main() {
 	if len(os.Args) >= 2 {
 		flag.Parse()
 		link, id := cli.ReqUpload()
-		fmt.Println(fmt.Sprintf("\n\n\tlink: %s/%d\n\n", link, id))
+		l := fmt.Sprintf("%s/%d", link, id)
+		l = termlink.ColorLink("link", l, "green", true)
+		l = strings.ReplaceAll(l, "(", "")
+		l = strings.ReplaceAll(l, ")", "")
+		fmt.Println(fmt.Sprintf("\n\n\t%s\n\n", l))
+
 		buf := bufio.NewReader(os.Stdin)
 		if *asData {
 			fmt.Print("> Start Upload? ⏎")
