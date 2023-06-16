@@ -85,7 +85,7 @@ func main() {
 		for {
 			// keepalive for render
 			_, _ = http.Get(host + "/keepalive")
-			<-time.After(30 * time.Minute)
+			<-time.After(1 * time.Minute)
 		}
 	}()
 	s.httpServer(":" + port)
